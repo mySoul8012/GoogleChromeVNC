@@ -1,8 +1,9 @@
 FROM jlesage/firefox
 
-# 安装中文字体支持和剪贴板工具
+# 安装中文字体支持
 RUN apk update && apk add --no-cache \
     wqy-zenhei \
+    xorg-server \
     xclip
 
 # 设置 Firefox 默认语言为中文
