@@ -1,7 +1,5 @@
-# Use a lightweight Debian image as the base
 FROM debian:bullseye-slim
 
-# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:99 \
     VNC_PASSWORD=password \
@@ -9,45 +7,19 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY_HEIGHT=720 \
     NOVNC_PORT=6080
 
-# Update package manager and install necessary packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        wget \
-        curl \
-        xvfb \
-        x11vnc \
-        fluxbox \
-        supervisor \
-        fonts-droid-fallback \
-        git \
-        net-tools \
-        procps \
-        python3 \
-        python3-pip \
-        locales && \
-    # Install Google Chrome
-    wget -qO /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    apt-get install -y --no-install-recommends /tmp/google-chrome.deb && \
-    rm /tmp/google-chrome.deb && \
-    # Install noVNC
+# 安装必要依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget curl git procps supervisor x11vnc xvfb fluxbox python3-pip \
+    x11-utils xmessage fonts-dejavu fonts-liberation fonts-noto && \
+    mkdir -p /root/.fluxbox && cp -r /etc/X11/fluxbox/* /root/.fluxbox/ && \
     git clone https://github.com/novnc/noVNC.git /opt/novnc && \
     ln -s /opt/novnc/vnc.html /opt/novnc/index.html && \
-    # Clean up
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Configure locale
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
-
-# Copy supervisord configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Expose ports for noVNC
-EXPOSE ${NOVNC_PORT}
-
-# Copy startup script
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# Set the command to execute the startup script
+EXPOSE 6080
+
 CMD ["/usr/local/bin/start.sh"]
