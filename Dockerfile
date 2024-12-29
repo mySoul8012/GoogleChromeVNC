@@ -1,9 +1,5 @@
 FROM dorowu/ubuntu-desktop-lxde-vnc
 
-# 安装 Firefox 浏览器
-RUN apt-get update && apt-get install -y firefox && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # 暴露 VNC 和 Web 服务端口
 EXPOSE 5901 6080
 
