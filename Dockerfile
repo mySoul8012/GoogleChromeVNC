@@ -1,20 +1,9 @@
-# 使用 Windows Server Core 基础镜像
-FROM mcr.microsoft.com/windows/servercore:ltsc2022
+FROM dorowu/ubuntu-desktop-lxde-vnc
 
-# 安装必要的工具和 RDP 服务
-RUN powershell -Command \
-    Install-WindowsFeature -Name RDS-RD-Server; \
-    Install-WindowsFeature -Name RDS-Licensing; \
-    Install-WindowsFeature -Name RDS-Connection-Broker
+# 替换源为国内源（以阿里云为例）
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    apt-get update && apt-get install -y firefox && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 创建用户并设置密码
-RUN net user rdpuser Password123! /add && net localgroup "Remote Desktop Users" rdpuser /add
-
-# 开启远程桌面服务
-RUN reg add "HKLM\\System\\CurrentControlSet\\Control\\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-
-# 暴露 RDP 默认端口
-EXPOSE 3389
-
-# 启动 RDP 服务
-CMD ["powershell", "-Command", "Start-Service -Name TermService; Wait-Event -Timeout Infinite"]
+# 启动命令：运行 VNC 服务和 Web 服务
+CMD ["/bin/bash", "-c", "/usr/bin/vncserver :1 -geometry 1280x800 -depth 24; tail -f /dev/null"]
