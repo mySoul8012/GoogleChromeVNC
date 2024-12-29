@@ -65,3 +65,73 @@ docker run -d -p 5800:5800 your-repo-name/firefox-chinese
 ## **许可证**
 
 本项目基于 [MIT 许可证](LICENSE)。
+
+---
+
+# **Docker-Firefox (English Version)**
+
+This is a customized Docker image based on [jlesage/firefox](https://hub.docker.com/r/jlesage/firefox), designed to run a Firefox browser with Chinese language support and accessible through a web interface.
+
+---
+
+## **Features**
+- **Lightweight**: Built on Alpine Linux, ensuring minimal resource usage.
+- **Chinese Support**: Pre-installed with Chinese fonts (WenQuanYi Zen Hei), suitable for browsing Chinese websites.
+- **Web Interface**: Access Firefox via a browser without local installation.
+- **Multi-language Support**: Default language set to Simplified Chinese (zh_CN).
+
+---
+
+## **Usage**
+
+### 1. **Pull the Image**
+```bash
+docker pull your-repo-name/firefox-chinese
+```
+
+### 2. **Run the Container**
+```bash
+docker run -d -p 5800:5800 your-repo-name/firefox-chinese
+```
+
+### 3. **Access the Web Interface**
+- Open your browser and navigate to `http://<your server IP>:5800`.
+
+---
+
+## **Technical Details**
+
+1. **Base Image**: Built on [jlesage/firefox] image.
+2. **Chinese Support**:
+   - Installed `wqy-zenhei` font (WenQuanYi Zen Hei).
+   - Configured default language to Simplified Chinese (zh_CN).
+3. **Dependencies**: Installed the following via `apk`:
+   - **wqy-zenhei**: Chinese font support.
+   - **xorg-server**: Graphical server.
+   - **xclip**: Clipboard support.
+4. **Port Exposure**: Exposes port `5800` for web interface access.
+
+---
+
+## **Environment Variables**
+- `LANG=zh_CN.UTF-8`: Sets system language to Simplified Chinese.
+- `LANGUAGE=zh_CN:zh`: Configures language priority to Chinese.
+- `LC_ALL=zh_CN.UTF-8`: Sets localization to Chinese.
+
+---
+
+## **System Requirements**
+- Docker: Version 20.10 or higher.
+- Recommended OS: Linux/Windows/macOS.
+
+---
+
+## **Contribution & Support**
+
+Feel free to submit issues and PRs to improve this project! For assistance, contact the developers or visit the [official documentation](https://hub.docker.com/r/jlesage/firefox).
+
+---
+
+## **License**
+
+This project is licensed under the [MIT License](LICENSE).
