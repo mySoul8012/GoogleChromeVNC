@@ -1,39 +1,50 @@
-FROM debian:bullseye
+FROM ubuntu:20.04
 
-# 更新包并安装必要依赖
+# 环境变量配置
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 更新系统并安装必要的依赖
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
     gnupg \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxtst6 \
-    libglib2.0-0 \
-    libgtk-3-0 \
-    libnss3 \
-    libasound2 \
-    libxrandr2 \
-    libpangocairo-1.0-0 \
-    libpango-1.0-0 \
-    x11-utils \
+    default-jdk \
+    mysql-client \
+    libmysql-java \
+    supervisor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 下载 Min 浏览器
-RUN wget https://github.com/minbrowser/min/releases/latest/download/min.deb -O /tmp/min.deb \
-    && dpkg -i /tmp/min.deb || apt-get install -y --fix-broken \
-    && rm /tmp/min.deb
+# 下载和安装 Guacamole Server
+RUN apt-get install -y build-essential libcairo2-dev libjpeg62-turbo-dev libpng-dev libtool-bin libossp-uuid-dev libavcodec-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libvncserver-dev libpulse-dev libssl-dev libvorbis-dev libwebp-dev \
+    && wget https://apache.org/dyn/closer.lua/guacamole/1.5.0/source/guacamole-server-1.5.0.tar.gz -O guacamole-server.tar.gz \
+    && tar -xzf guacamole-server.tar.gz \
+    && cd guacamole-server-1.5.0 \
+    && ./configure --with-init-dir=/etc/init.d \
+    && make \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf guacamole-server.tar.gz guacamole-server-1.5.0
 
-# 添加用户以非 root 身份运行浏览器
-RUN useradd -m user \
-    && chown -R user:user /home/user
+# 下载和配置 Guacamole Web 应用程序
+RUN mkdir -p /etc/guacamole \
+    && wget https://apache.org/dyn/closer.lua/guacamole/1.5.0/binary/guacamole-1.5.0.war -O /etc/guacamole/guacamole.war \
+    && ln -s /etc/guacamole/guacamole.war /usr/share/tomcat9/webapps/guacamole.war
 
-USER user
-WORKDIR /home/user
+# 安装 Tomcat
+RUN apt-get install -y tomcat9 \
+    && systemctl enable tomcat9
+
+# 配置 Guacamole
+COPY guacamole.properties /etc/guacamole/guacamole.properties
+RUN ln -s /etc/guacamole /usr/share/tomcat9/.guacamole
+
+# Supervisor 配置
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # 暴露端口
 EXPOSE 8080
 
-# 设置浏览器启动命令
-ENTRYPOINT ["min"]
+# 启动服务
+CMD ["/usr/bin/supervisord"]
